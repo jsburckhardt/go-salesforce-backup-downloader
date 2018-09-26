@@ -1,7 +1,7 @@
 # go-salesforce-backup-downloader
 
 #IT'S A WORK IN PROCESS
-![cobra logo]
+
 go-salesforce-backup-downloader is a Golang command line app to download Salesforce Org's backup files
 
 Some of the features:
