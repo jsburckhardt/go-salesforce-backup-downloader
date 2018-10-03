@@ -1,43 +1,40 @@
 package main
 
 import (
-	"fmt"
-	"sync"
+	"net/http"
+	"time"
+
+	"github.com/go-playground/log"
+	"github.com/go-playground/log/handlers/console"
+	"github.com/spf13/viper"
 )
 
-func worker(tasksCh <-chan string, wg *sync.WaitGroup, token string) {
-	defer wg.Done()
-	for {
-		task, ok := <-tasksCh
-		if !ok {
-			return
-		}
+var httpClient *http.Client
 
-		fmt.Println("       Get-file-size(", task, ") using token:", token)
-		fmt.Println("       download-file(", task, ") using token:", token)
-		fmt.Println("Validating-file-size(", task, ")\n")
+func init() {
+	// logger
+	cLog := console.New(true)
+	log.AddHandler(cLog, log.AllLevels...)
 
-	}
-}
-
-func pool(wg *sync.WaitGroup, workers int, myvalues []string) {
-	tasksCh := make(chan string)
-
-	for i := 0; i < workers; i++ {
-		go worker(tasksCh, wg, "hjkjdfad")
+	// config
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+	viper.AutomaticEnv()
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Fatalf("Fatal error parsing config file: %v", err)
+	} else {
+		log.Infof("Using configuration file %s", viper.ConfigFileUsed())
 	}
 
-	for _, v := range myvalues {
-		tasksCh <- v
+	// initialise client
+	httpClient = &http.Client{
+		Timeout: time.Minute * 10,
 	}
-
-	close(tasksCh)
 }
 
 func main() {
-	var wg sync.WaitGroup
-	wg.Add(5)
-	myvalues := []string{"url1", "url2", "url3", "url4", "url5", "url6", "url7", "url8", "url9"}
-	go pool(&wg, 5, myvalues)
-	wg.Wait()
+	loginData := login()
+
+	export(loginData)
 }
