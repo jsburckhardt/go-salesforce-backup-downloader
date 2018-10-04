@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/dustin/go-humanize"
 	"github.com/spf13/viper"
@@ -19,50 +21,113 @@ func export(lr loginRes) {
 	fmt.Println(paths)
 
 	fmt.Printf("NUMBER OF URLS TO DOWNLOAD: %v\n", len(paths))
-	if len(paths) <= 1 {
+	if len(paths) == 0 {
 		log.Fatalln("NO BACKUP FILES!!!")
 	}
 
-	done := make(chan bool, len(paths))
-	errch := make(chan error, len(paths))
+	var wg sync.WaitGroup
+	fmt.Printf("Creating workers\n")
+	wg.Add(3)
+	fmt.Printf("Creating pool\n")
+	go pool(&wg, 3, paths, lr)
+	wg.Wait()
+}
 
-	for _, path := range paths {
+// /////////////////////////////////////////////////////////////////////////////////////
 
-		go func(path string) {
-			url := viper.GetString("sf.baseUrl") + path
+// 	done := make(chan bool, len(paths))
+// 	errch := make(chan error, len(paths))
 
-			fmt.Printf("Working on url: %s\n", url)
-			expectecSize := getDownloadSize(lr, url)
-			fmt.Printf("size: %s\n", expectecSize)
-			fn := fileName(url)
-			filePath := viper.GetString("sf.backuppath") + fn + ".zip"
-			//retry := 0
+// 	for _, path := range paths {
 
-			err := DownloadFile(lr, filePath, url)
+// 		go func(path string) {
+// 			url := viper.GetString("sf.baseUrl") + path
 
-			//panic(err)
-			if err != nil {
-				errch <- err
-				done <- false
-				return
-			}
-			done <- true
-			errch <- nil
-		}(path)
+// 			fmt.Printf("Working on url: %s\n", url)
+// 			expectecSize := getDownloadSize(lr, url)
+// 			fmt.Printf("size: %s\n", expectecSize)
+// 			fn := fileName(url)
+// 			filePath := viper.GetString("sf.backuppath") + fn + ".zip"
+// 			//retry := 0
+
+// 			err := DownloadFile(lr, filePath, url)
+
+// 			//panic(err)
+// 			if err != nil {
+// 				errch <- err
+// 				done <- false
+// 				return
+// 			}
+// 			done <- true
+// 			errch <- nil
+// 		}(path)
+// 	}
+
+// 	var result []bool
+// 	var errStr string
+// 	for i := 0; i < len(paths); i++ {
+// 		//bytesArray = append(bytesArray, <-done)
+// 		result = append(result, <-done)
+// 		if err := <-errch; err != nil {
+// 			errStr = errStr + " " + err.Error()
+// 		}
+// 	}
+// 	fmt.Println(errStr)
+// 	fmt.Println(result)
+
+// }
+
+func pool(wg *sync.WaitGroup, workers int, paths []string, lr loginRes) {
+	tasksCh := make(chan string)
+
+	for i := 0; i < workers; i++ {
+		fmt.Printf("Creating pool of workers. Worker: %v\n", i+1)
+		go worker(tasksCh, wg, lr)
 	}
 
-	var result []bool
-	var errStr string
-	for i := 0; i < len(paths); i++ {
-		//bytesArray = append(bytesArray, <-done)
-		result = append(result, <-done)
-		if err := <-errch; err != nil {
-			errStr = errStr + " " + err.Error()
+	for _, v := range paths {
+		tasksCh <- v
+	}
+	close(tasksCh)
+}
+
+func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes) {
+	defer wg.Done()
+
+	for {
+		task, ok := <-tasksCh
+		if !ok {
+			return
+		}
+
+		// getting file's expected size
+		url := viper.GetString("sf.baseUrl") + task
+		expectecSize := getDownloadSize(lr, url)
+		fmt.Printf("downloading file -> %s with size %v\n", task, expectecSize)
+
+		// downloading file
+		fn := fileName(url)
+		filePath := viper.GetString("sf.backuppath") + fn + ".zip"
+		err := DownloadFile(lr, filePath, url)
+		if err != nil {
+			log.Fatalln(err)
+			return
+		}
+
+		//verifying file size
+		fi, err := os.Stat(filePath)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		expectedSizeInt, err := strconv.ParseInt(expectecSize, 10, 64)
+		if expectedSizeInt == fi.Size() {
+			completedfn := viper.GetString("sf.backuppath") + fn
+			_, err := os.Create(completedfn)
+			if err != nil {
+				log.Fatalln(err)
+			}
 		}
 	}
-	fmt.Println(errStr)
-	fmt.Println(result)
-
 }
 
 func getPaths(lr loginRes) []string {

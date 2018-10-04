@@ -36,8 +36,8 @@ func login() loginRes {
 		log.Fatalf("Error upon login: %v", err)
 	}
 
-	fmt.Println("*** response ***")
-	fmt.Println(string(res))
+	// fmt.Println("*** response ***")
+	// fmt.Println(string(res))
 
 	return parseLogin(string(res))
 }
