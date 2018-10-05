@@ -65,8 +65,6 @@ func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes) {
 		if err != nil {
 			log.Fatalln(err)
 			return
-		} else {
-			log.Printf("finished download: %s", fn)
 		}
 
 		//verifying file size
@@ -81,6 +79,9 @@ func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes) {
 			if err != nil {
 				log.Fatalln(err)
 			}
+			log.Printf("Successful download: %s", fn)
+		} else {
+			log.Printf("FAILED download: %s", fn)
 		}
 	}
 }
