@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -34,7 +35,12 @@ func init() {
 }
 
 func main() {
+	start := time.Now()
+	fmt.Printf("Start time -> %s\n", start.Format(time.ANSIC))
 	loginData := login()
 
 	export(loginData)
+	t := time.Now()
+	fmt.Printf("End time -> %s\n", t.Format(time.ANSIC))
+	fmt.Printf("total time -> %s\n", t.Sub(start))
 }

@@ -1,0 +1,6 @@
+sf:
+  username: <username>
+  password: <password+token>
+  baseUrl: <orgurl>
+  backuppath: <path e.g. backup/>
+  workers: <workers>
