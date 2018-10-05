@@ -11,71 +11,24 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/dustin/go-humanize"
 	"github.com/spf13/viper"
 )
 
 func export(lr loginRes) {
 	//paths := []string{"/servlet/servlet.OrgExport?fileName=WE_00D90000000JJYKEA4_1.ZIP&id=0920W00000t5oFk "}
 	paths := getPaths(lr)
-	fmt.Println(paths)
 
 	fmt.Printf("NUMBER OF URLS TO DOWNLOAD: %v\n", len(paths))
 	if len(paths) == 0 {
 		log.Fatalln("NO BACKUP FILES!!!")
 	}
 
+	fmt.Printf("USING %v THREADS\n", viper.GetInt("sf.workers"))
 	var wg sync.WaitGroup
-	fmt.Printf("Creating workers\n")
-	wg.Add(3)
-	fmt.Printf("Creating pool\n")
-	go pool(&wg, 3, paths, lr)
+	wg.Add(viper.GetInt("sf.workers"))
+	go pool(&wg, viper.GetInt("sf.workers"), paths, lr)
 	wg.Wait()
 }
-
-// /////////////////////////////////////////////////////////////////////////////////////
-
-// 	done := make(chan bool, len(paths))
-// 	errch := make(chan error, len(paths))
-
-// 	for _, path := range paths {
-
-// 		go func(path string) {
-// 			url := viper.GetString("sf.baseUrl") + path
-
-// 			fmt.Printf("Working on url: %s\n", url)
-// 			expectecSize := getDownloadSize(lr, url)
-// 			fmt.Printf("size: %s\n", expectecSize)
-// 			fn := fileName(url)
-// 			filePath := viper.GetString("sf.backuppath") + fn + ".zip"
-// 			//retry := 0
-
-// 			err := DownloadFile(lr, filePath, url)
-
-// 			//panic(err)
-// 			if err != nil {
-// 				errch <- err
-// 				done <- false
-// 				return
-// 			}
-// 			done <- true
-// 			errch <- nil
-// 		}(path)
-// 	}
-
-// 	var result []bool
-// 	var errStr string
-// 	for i := 0; i < len(paths); i++ {
-// 		//bytesArray = append(bytesArray, <-done)
-// 		result = append(result, <-done)
-// 		if err := <-errch; err != nil {
-// 			errStr = errStr + " " + err.Error()
-// 		}
-// 	}
-// 	fmt.Println(errStr)
-// 	fmt.Println(result)
-
-// }
 
 func pool(wg *sync.WaitGroup, workers int, paths []string, lr loginRes) {
 	tasksCh := make(chan string)
@@ -103,15 +56,17 @@ func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes) {
 		// getting file's expected size
 		url := viper.GetString("sf.baseUrl") + task
 		expectecSize := getDownloadSize(lr, url)
-		fmt.Printf("downloading file -> %s with size %v\n", task, expectecSize)
 
 		// downloading file
 		fn := fileName(url)
 		filePath := viper.GetString("sf.backuppath") + fn + ".zip"
+		log.Printf("Staring download: %s", fn)
 		err := DownloadFile(lr, filePath, url)
 		if err != nil {
 			log.Fatalln(err)
 			return
+		} else {
+			log.Printf("finished download: %s", fn)
 		}
 
 		//verifying file size
@@ -153,7 +108,6 @@ func fileName(url string) string {
 }
 
 func getDownloadSize(lr loginRes, url string) string {
-	fmt.Println("Getting download size...")
 	headers := map[string]string{
 		"Cookie":         fmt.Sprintf("oid=%s;sid=%s", lr.orgID, lr.sID),
 		"X-SFDC-Session": lr.sID,
@@ -170,18 +124,11 @@ func DownloadFile(lr loginRes, filepath string, url string) error {
 
 	// Create the file, but give it a tmp file extension, this means we won't overwrite a
 	// file until it's downloaded, but we'll remove the tmp extension once downloaded.
-	out, err := os.Create(filepath + ".tmp")
+	out, err := os.Create(filepath)
 	if err != nil {
 		return err
 	}
 	defer out.Close()
-
-	// Get the data
-	// resp, err := http.Get(url)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer resp.Body.Close()
 
 	headers := map[string]string{
 		"Cookie":         fmt.Sprintf("oid=%s;sid=%s", lr.orgID, lr.sID),
@@ -202,43 +149,11 @@ func DownloadFile(lr loginRes, filepath string, url string) error {
 		return err
 	}
 
-	// Create our progress reporter and pass it to be used alongside our writer
-	counter := &WriteCounter{}
-	_, err = io.Copy(out, io.TeeReader(resp.Body, counter))
-	if err != nil {
-		return err
-	}
-
-	// The progress use the same line so print a new line once it's finished downloading
-	fmt.Print("\n")
-
-	out.Close()
-	err = os.Rename(filepath+".tmp", filepath)
+	// Write body to file
+	_, err = io.Copy(out, resp.Body)
 	if err != nil {
 		return err
 	}
 
 	return nil
-}
-
-// WriteCounter ...
-type WriteCounter struct {
-	Total uint64
-}
-
-func (wc *WriteCounter) Write(p []byte) (int, error) {
-	n := len(p)
-	wc.Total += uint64(n)
-	wc.PrintProgress()
-	return n, nil
-}
-
-func (wc WriteCounter) PrintProgress() {
-	// Clear the line by using a character return to go back to the start and remove
-	// the remaining characters by filling it with spaces
-	fmt.Printf("\r%s", strings.Repeat(" ", 35))
-
-	// Return again and print current status of download
-	// We use the humanize package to print the bytes in a meaningful way (e.g. 10 MB)
-	fmt.Printf("\rDownloading... %s complete", humanize.Bytes(wc.Total))
 }
