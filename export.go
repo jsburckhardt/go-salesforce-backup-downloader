@@ -19,8 +19,9 @@ func export(lr loginRes) {
 	paths := getPaths(lr)
 
 	fmt.Printf("NUMBER OF URLS TO DOWNLOAD: %v\n", len(paths))
-	if len(paths) == 0 {
+	if len(paths[0]) == 0 {
 		log.Fatalln("NO BACKUP FILES!!!")
+		log.Fatalln()
 	}
 
 	fmt.Printf("USING %v THREADS\n", viper.GetInt("sf.workers"))
@@ -155,6 +156,7 @@ func DownloadFile(lr loginRes, filepath string, url string) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	return nil
 }
