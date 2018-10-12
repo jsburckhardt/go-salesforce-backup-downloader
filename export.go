@@ -38,7 +38,6 @@ func pool(wg *sync.WaitGroup, workers int, paths []string, lr loginRes, consolid
 	tasksCh := make(chan string)
 
 	for i := 0; i < workers; i++ {
-		fmt.Printf("Creating pool of workers. Worker: %v\n", i+1)
 		go worker(tasksCh, wg, lr, consolidateResults)
 	}
 
