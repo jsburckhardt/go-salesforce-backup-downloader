@@ -39,8 +39,12 @@ func main() {
 	fmt.Printf("Start time -> %s\n", start.Format(time.ANSIC))
 	loginData := login()
 
-	export(loginData)
+	// results
+	consolidateResults := make(map[string]string)
+
+	export(loginData, &consolidateResults)
 	t := time.Now()
 	fmt.Printf("End time -> %s\n", t.Format(time.ANSIC))
 	fmt.Printf("total time -> %s\n", t.Sub(start))
+	fmt.Println(consolidateResults)
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -14,29 +15,30 @@ import (
 	"github.com/spf13/viper"
 )
 
-func export(lr loginRes) {
-	//paths := []string{"/servlet/servlet.OrgExport?fileName=WE_00D90000000JJYKEA4_1.ZIP&id=0920W00000t5oFk "}
+var wg sync.WaitGroup
+var mutex = &sync.Mutex{}
+
+func export(lr loginRes, consolidateResults *map[string]string) {
 	paths := getPaths(lr)
 
-	fmt.Printf("NUMBER OF URLS TO DOWNLOAD: %v\n", len(paths))
 	if len(paths[0]) == 0 {
-		log.Fatalln("NO BACKUP FILES!!!")
-		log.Fatalln()
+		err := errors.New("Getting files to download failed, number of files zero")
+		log.Fatalln(err)
 	}
-
+	fmt.Printf("NUMBER OF URLS TO DOWNLOAD: %v\n", len(paths))
 	fmt.Printf("USING %v THREADS\n", viper.GetInt("sf.workers"))
-	var wg sync.WaitGroup
+
 	wg.Add(viper.GetInt("sf.workers"))
-	go pool(&wg, viper.GetInt("sf.workers"), paths, lr)
+	go pool(&wg, viper.GetInt("sf.workers"), paths, lr, consolidateResults)
 	wg.Wait()
 }
 
-func pool(wg *sync.WaitGroup, workers int, paths []string, lr loginRes) {
+func pool(wg *sync.WaitGroup, workers int, paths []string, lr loginRes, consolidateResults *map[string]string) {
 	tasksCh := make(chan string)
 
 	for i := 0; i < workers; i++ {
 		fmt.Printf("Creating pool of workers. Worker: %v\n", i+1)
-		go worker(tasksCh, wg, lr)
+		go worker(tasksCh, wg, lr, consolidateResults)
 	}
 
 	for _, v := range paths {
@@ -45,7 +47,7 @@ func pool(wg *sync.WaitGroup, workers int, paths []string, lr loginRes) {
 	close(tasksCh)
 }
 
-func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes) {
+func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes, consolidateResults *map[string]string) {
 	defer wg.Done()
 
 	for {
@@ -63,6 +65,7 @@ func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes) {
 		filePath := viper.GetString("sf.backuppath") + fn + ".zip"
 		log.Printf("Staring download: %s", fn)
 		err := DownloadFile(lr, filePath, url)
+
 		if err != nil {
 			log.Fatalln(err)
 			return
@@ -80,9 +83,18 @@ func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes) {
 			if err != nil {
 				log.Fatalln(err)
 			}
+			mutex.Lock()
+			(*consolidateResults)[fn] = "Successful"
+			mutex.Unlock()
 			log.Printf("Successful download: %s", fn)
 		} else {
-			log.Printf("FAILED download: %s", fn)
+			mutex.Lock()
+			(*consolidateResults)[fn] = "Fail"
+			mutex.Unlock()
+			os.Remove(filePath)
+			errorMessage := "Downloading file " + fn + " failed"
+			err := errors.New(errorMessage)
+			log.Fatalln(err)
 		}
 	}
 }
