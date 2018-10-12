@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -18,7 +19,7 @@ import (
 var wg sync.WaitGroup
 var mutex = &sync.Mutex{}
 
-func export(lr loginRes, consolidateResults *map[string]string) {
+func export(lr loginRes, consolidateResults *[]DownloadResult) {
 	paths := getPaths(lr)
 
 	if len(paths[0]) == 0 {
@@ -33,7 +34,7 @@ func export(lr loginRes, consolidateResults *map[string]string) {
 	wg.Wait()
 }
 
-func pool(wg *sync.WaitGroup, workers int, paths []string, lr loginRes, consolidateResults *map[string]string) {
+func pool(wg *sync.WaitGroup, workers int, paths []string, lr loginRes, consolidateResults *[]DownloadResult) {
 	tasksCh := make(chan string)
 
 	for i := 0; i < workers; i++ {
@@ -47,7 +48,7 @@ func pool(wg *sync.WaitGroup, workers int, paths []string, lr loginRes, consolid
 	close(tasksCh)
 }
 
-func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes, consolidateResults *map[string]string) {
+func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes, consolidateResults *[]DownloadResult) {
 	defer wg.Done()
 
 	for {
@@ -55,6 +56,9 @@ func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes, consolidateR
 		if !ok {
 			return
 		}
+
+		//Download details for consolidate results
+		var downloadResultTemp DownloadResult
 
 		// getting file's expected size
 		url := viper.GetString("sf.baseUrl") + task
@@ -64,38 +68,49 @@ func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes, consolidateR
 		fn := fileName(url)
 		filePath := viper.GetString("sf.backuppath") + fn + ".zip"
 		log.Printf("Staring download: %s", fn)
-		err := DownloadFile(lr, filePath, url)
 
+		startDownloadTime := time.Now()
+		err := DownloadFile(lr, filePath, url)
 		if err != nil {
 			log.Fatalln(err)
 			return
 		}
+		endDownloadTime := time.Now()
 
 		//verifying file size
 		fi, err := os.Stat(filePath)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		expectedSizeInt, err := strconv.ParseInt(expectecSize, 10, 64)
-		if expectedSizeInt == fi.Size() {
+
+		attempt := 0
+		downloadResultTemp.Duration = string(endDownloadTime.Sub(startDownloadTime))
+		downloadResultTemp.FileName = fn
+
+		if expectedSizeInt, _ := strconv.ParseInt(expectecSize, 10, 64); expectedSizeInt == fi.Size() {
 			completedfn := viper.GetString("sf.backuppath") + fn
 			_, err := os.Create(completedfn)
 			if err != nil {
 				log.Fatalln(err)
 			}
-			mutex.Lock()
-			(*consolidateResults)[fn] = "Successful"
-			mutex.Unlock()
+			attempt++
+			downloadResultTemp.Attempt = string(attempt)
+			downloadResultTemp.FileSize = expectecSize
+			downloadResultTemp.Result = "Successful"
 			log.Printf("Successful download: %s", fn)
 		} else {
-			mutex.Lock()
-			(*consolidateResults)[fn] = "Fail"
-			mutex.Unlock()
+			attempt++
+			downloadResultTemp.Attempt = string(attempt)
+			downloadResultTemp.FileSize = string(0)
+			downloadResultTemp.Result = "Fail"
 			os.Remove(filePath)
 			errorMessage := "Downloading file " + fn + " failed"
 			err := errors.New(errorMessage)
 			log.Fatalln(err)
 		}
+		mutex.Lock()
+		*consolidateResults = append(*consolidateResults, downloadResultTemp)
+		mutex.Unlock()
 	}
 }
 

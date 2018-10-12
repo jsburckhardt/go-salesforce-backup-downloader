@@ -10,6 +10,11 @@ import (
 	"github.com/spf13/viper"
 )
 
+//DownloadResult struct used for catching results from downloaded file attempt
+type DownloadResult struct {
+	FileName, FileSize, Attempt, Result, Duration string
+}
+
 var httpClient *http.Client
 
 func init() {
@@ -40,7 +45,7 @@ func main() {
 	loginData := login()
 
 	// results
-	consolidateResults := make(map[string]string)
+	var consolidateResults []DownloadResult
 
 	export(loginData, &consolidateResults)
 	t := time.Now()
