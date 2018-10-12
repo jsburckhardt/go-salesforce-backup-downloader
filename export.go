@@ -84,7 +84,7 @@ func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes, consolidateR
 		}
 
 		attempt := 0
-		downloadResultTemp.Duration = string(endDownloadTime.Sub(startDownloadTime))
+		downloadResultTemp.Duration = endDownloadTime.Sub(startDownloadTime)
 		downloadResultTemp.FileName = fn
 
 		if expectedSizeInt, _ := strconv.ParseInt(expectecSize, 10, 64); expectedSizeInt == fi.Size() {
@@ -94,13 +94,13 @@ func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes, consolidateR
 				log.Fatalln(err)
 			}
 			attempt++
-			downloadResultTemp.Attempt = string(attempt)
+			downloadResultTemp.Attempt = attempt
 			downloadResultTemp.FileSize = expectecSize
 			downloadResultTemp.Result = "Successful"
 			log.Printf("Successful download: %s", fn)
 		} else {
 			attempt++
-			downloadResultTemp.Attempt = string(attempt)
+			downloadResultTemp.Attempt = attempt
 			downloadResultTemp.FileSize = string(0)
 			downloadResultTemp.Result = "Fail"
 			os.Remove(filePath)

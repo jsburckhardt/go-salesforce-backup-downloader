@@ -12,7 +12,9 @@ import (
 
 //DownloadResult struct used for catching results from downloaded file attempt
 type DownloadResult struct {
-	FileName, FileSize, Attempt, Result, Duration string
+	FileName, FileSize, Result string
+	Attempt                    int
+	Duration                   time.Duration
 }
 
 var httpClient *http.Client
@@ -51,5 +53,11 @@ func main() {
 	t := time.Now()
 	fmt.Printf("End time -> %s\n", t.Format(time.ANSIC))
 	fmt.Printf("total time -> %s\n", t.Sub(start))
-	fmt.Println(consolidateResults)
+	for _, v := range consolidateResults {
+		fmt.Println("Name: ", v.FileName)
+		fmt.Println("Size: ", v.FileSize)
+		fmt.Printf("Attempt: %v\n", v.Attempt)
+		fmt.Println("Result: ", v.Result)
+		fmt.Printf("Duration: %s\n", v.Duration)
+	}
 }
