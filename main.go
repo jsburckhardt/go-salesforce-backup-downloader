@@ -46,10 +46,12 @@ func main() {
 	fmt.Printf("Start time -> %s\n", start.Format(time.ANSIC))
 	loginData := login()
 
-	// Variable to consolidate results
 	var consolidateResults []DownloadResult
 
+	//Download files
 	export(loginData, &consolidateResults)
+
+	//Export results
 	exportResultsToCsv(consolidateResults)
 
 	t := time.Now()
