@@ -46,18 +46,13 @@ func main() {
 	fmt.Printf("Start time -> %s\n", start.Format(time.ANSIC))
 	loginData := login()
 
-	// results
+	// Variable to consolidate results
 	var consolidateResults []DownloadResult
 
 	export(loginData, &consolidateResults)
+	exportResultsToCsv(consolidateResults)
+
 	t := time.Now()
 	fmt.Printf("End time -> %s\n", t.Format(time.ANSIC))
 	fmt.Printf("total time -> %s\n", t.Sub(start))
-	for _, v := range consolidateResults {
-		fmt.Println("Name: ", v.FileName)
-		fmt.Println("Size: ", v.FileSize)
-		fmt.Printf("Attempt: %v\n", v.Attempt)
-		fmt.Println("Result: ", v.Result)
-		fmt.Printf("Duration: %s\n", v.Duration)
-	}
 }

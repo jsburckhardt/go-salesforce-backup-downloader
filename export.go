@@ -87,11 +87,6 @@ func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes, consolidateR
 		downloadResultTemp.FileName = fn
 
 		if expectedSizeInt, _ := strconv.ParseInt(expectecSize, 10, 64); expectedSizeInt == fi.Size() {
-			completedfn := viper.GetString("sf.backuppath") + fn
-			_, err := os.Create(completedfn)
-			if err != nil {
-				log.Fatalln(err)
-			}
 			attempt++
 			downloadResultTemp.Attempt = attempt
 			downloadResultTemp.FileSize = expectecSize
