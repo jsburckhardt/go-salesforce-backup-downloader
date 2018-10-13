@@ -10,6 +10,13 @@ import (
 	"github.com/spf13/viper"
 )
 
+//DownloadResult struct used for catching results from downloaded file attempt
+type DownloadResult struct {
+	FileName, FileSize, Result string
+	Attempt                    int
+	Duration                   time.Duration
+}
+
 var httpClient *http.Client
 
 func init() {
@@ -39,12 +46,13 @@ func main() {
 	fmt.Printf("Start time -> %s\n", start.Format(time.ANSIC))
 	loginData := login()
 
-	// results
-	consolidateResults := make(map[string]string)
+	// Variable to consolidate results
+	var consolidateResults []DownloadResult
 
 	export(loginData, &consolidateResults)
+	exportResultsToCsv(consolidateResults)
+
 	t := time.Now()
 	fmt.Printf("End time -> %s\n", t.Format(time.ANSIC))
 	fmt.Printf("total time -> %s\n", t.Sub(start))
-	fmt.Println(consolidateResults)
 }
