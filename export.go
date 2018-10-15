@@ -27,10 +27,16 @@ func export(lr loginRes, consolidateResults *[]DownloadResult) {
 		log.Fatalln(err)
 	}
 	fmt.Printf("NUMBER OF URLS TO DOWNLOAD: %v\n", len(paths))
-	fmt.Printf("USING %v THREADS\n", viper.GetInt("sf.workers"))
+	workers := 0
+	if len(paths) < viper.GetInt("sf.maxworkers") {
+		workers = len(paths)
+	} else {
+		workers = viper.GetInt("sf.maxworkers")
+	}
+	fmt.Printf("USING %v THREADS\n", workers)
 
-	wg.Add(viper.GetInt("sf.workers"))
-	go pool(&wg, viper.GetInt("sf.workers"), paths, lr, consolidateResults)
+	wg.Add(workers)
+	go pool(&wg, workers, paths, lr, consolidateResults)
 	wg.Wait()
 }
 
