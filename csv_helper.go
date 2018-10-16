@@ -23,7 +23,7 @@ func exportResultsToCsv(consolidateResults []DownloadResult) {
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
 
-	csvheaders := []string{"FileName", "FileSize", "Result", "Attempt", "Duration"}
+	csvheaders := []string{"FileName", "FileSize", "Result", "Error", "Attempt", "Duration"}
 	err = writer.Write(csvheaders)
 	if err != nil {
 		log.Fatal(err)
@@ -31,7 +31,7 @@ func exportResultsToCsv(consolidateResults []DownloadResult) {
 	}
 
 	for _, value := range consolidateResults {
-		arrayvalue := []string{value.FileName, value.FileSize, value.Result, strconv.Itoa(value.Attempt), (value.Duration).String()}
+		arrayvalue := []string{value.FileName, value.FileSize, value.Result, value.Error, strconv.Itoa(value.Attempt), (value.Duration).String()}
 		err := writer.Write(arrayvalue)
 		if err != nil {
 			log.Fatal(err)

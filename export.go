@@ -81,6 +81,7 @@ func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes, consolidateR
 				attempt++
 				err := DownloadFile(lr, filePath, url)
 				if err != nil {
+					downloadResultTemp.Error = err.Error()
 					log.Info(err)
 				}
 			} else if attempt == 3 {
@@ -93,10 +94,12 @@ func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes, consolidateR
 				log.Infof("The file is corrupted. Retry download attempt: %v", attempt)
 				err := DownloadFile(lr, filePath, url)
 				if err != nil {
+					downloadResultTemp.Error = err.Error()
 					log.Info(err)
 				}
 			} else {
 				log.Infof("Successful download: %s", fn)
+				downloadResultTemp.Error = "nil"
 				validateDownloadResult = false
 				downloadResultTemp.Result = "Successful"
 			}

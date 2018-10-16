@@ -13,9 +13,9 @@ import (
 
 //DownloadResult struct used for catching results from downloaded file attempt
 type DownloadResult struct {
-	FileName, FileSize, Result string
-	Attempt                    int
-	Duration                   time.Duration
+	FileName, FileSize, Result, Error string
+	Attempt                           int
+	Duration                          time.Duration
 }
 
 var httpClient *http.Client
@@ -38,7 +38,7 @@ func init() {
 
 	// initialise client
 	httpClient = &http.Client{
-		Timeout: time.Minute * 10,
+		Timeout: time.Minute * 1,
 	}
 }
 
