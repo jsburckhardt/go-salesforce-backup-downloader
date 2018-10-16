@@ -69,7 +69,8 @@ func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes, consolidateR
 
 		expectecSize := getDownloadSize(lr, url)
 		fn := fileName(url)
-		filePath := viper.GetString("sf.backuppath") + "/" + fn + ".zip"
+		fileFolderValidated := folderValidator(viper.GetString("sf.backuppath"))
+		filePath := fileFolderValidated + "/" + fn + ".zip"
 
 		startDownloadTime := time.Now()
 		log.Infof("Downloading file %s. Attempt: %v", filePath, attempt+1)

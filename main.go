@@ -50,9 +50,13 @@ func main() {
 	var consolidateResults []DownloadResult
 
 	//Verifying target folder
-	if _, err := os.Stat(viper.GetString("sf.backuppath")); os.IsNotExist(err) {
-		log.Infof("backuppath folder doesn't exist. Creating: %s", viper.GetString("sf.backuppath"))
-		os.Mkdir(viper.GetString("sf.backuppath"), 0777)
+	fileFolderValidated := folderValidator(viper.GetString("sf.backuppath"))
+	if _, err := os.Stat(fileFolderValidated); os.IsNotExist(err) {
+		log.Infof("backuppath folder doesn't exist. Creating: %s", fileFolderValidated)
+		err := os.Mkdir(fileFolderValidated, 0777)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	export(loginData, &consolidateResults)

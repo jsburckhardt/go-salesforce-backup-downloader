@@ -11,7 +11,8 @@ import (
 )
 
 func exportResultsToCsv(consolidateResults []DownloadResult) {
-	exportResultsToCsvFileName := viper.GetString("sf.backuppath") + "/" + viper.GetString("sf.username") + ".csv"
+	fileFolderValidated := folderValidator(viper.GetString("sf.backuppath"))
+	exportResultsToCsvFileName := fileFolderValidated + "/" + viper.GetString("sf.username") + ".csv"
 	file, err := os.Create(exportResultsToCsvFileName)
 	if err != nil {
 		log.Fatal(err)
