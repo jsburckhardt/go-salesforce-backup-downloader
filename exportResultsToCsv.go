@@ -2,18 +2,19 @@ package main
 
 import (
 	"encoding/csv"
-	"log"
 	"os"
 	"strconv"
+
+	"github.com/go-playground/log"
 
 	"github.com/spf13/viper"
 )
 
 func exportResultsToCsv(consolidateResults []DownloadResult) {
-	exportResultsToCsvFileName := viper.GetString("sf.backuppath") + viper.GetString("sf.username") + ".csv"
+	exportResultsToCsvFileName := viper.GetString("sf.backuppath") + "/" + viper.GetString("sf.username") + ".csv"
 	file, err := os.Create(exportResultsToCsvFileName)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 		return
 	}
 	defer file.Close()
@@ -24,7 +25,7 @@ func exportResultsToCsv(consolidateResults []DownloadResult) {
 	csvheaders := []string{"FileName", "FileSize", "Result", "Attempt", "Duration"}
 	err = writer.Write(csvheaders)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 		return
 	}
 
@@ -32,7 +33,7 @@ func exportResultsToCsv(consolidateResults []DownloadResult) {
 		arrayvalue := []string{value.FileName, value.FileSize, value.Result, strconv.Itoa(value.Attempt), (value.Duration).String()}
 		err := writer.Write(arrayvalue)
 		if err != nil {
-			log.Fatalln(err)
+			log.Fatal(err)
 			return
 		}
 	}

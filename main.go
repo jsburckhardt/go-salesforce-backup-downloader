@@ -51,7 +51,7 @@ func main() {
 
 	//Verifying target folder
 	if _, err := os.Stat(viper.GetString("sf.backuppath")); os.IsNotExist(err) {
-		log.Infof("backuppath folder doesn't exist. Creating; %s", viper.GetString("sf.backuppath"))
+		log.Infof("backuppath folder doesn't exist. Creating: %s", viper.GetString("sf.backuppath"))
 		os.Mkdir(viper.GetString("sf.backuppath"), 0777)
 	}
 

@@ -21,7 +21,7 @@ func login() loginRes {
 
 	//return parseLogin(xml)
 
-	url := viper.GetString("sf.baseUrl") + "/services/Soap/u/40.0"
+	url := "https://login.salesforce.com/services/Soap/u/40.0"
 
 	headers := map[string]string{
 		"Content-Type": "text/xml",
@@ -38,6 +38,7 @@ func login() loginRes {
 
 	// fmt.Println("*** response ***")
 	// fmt.Println(string(res))
+	// fmt.Println(parseLogin(string(res)))
 
 	return parseLogin(string(res))
 }
