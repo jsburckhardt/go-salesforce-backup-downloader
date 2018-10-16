@@ -1,6 +1,5 @@
 sf:
   username: <username>
   password: <password+token>
-  baseUrl: <orgurl>
-  backuppath: <path e.g. backup/>
+  backuppath: <path e.g. backup>
   maxworkers: <workers>

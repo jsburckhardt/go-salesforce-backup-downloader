@@ -3,14 +3,16 @@ package main
 import "strings"
 
 type loginRes struct {
-	sID   string
-	orgID string
+	sID    string
+	orgID  string
+	orgURL string
 }
 
 func parseLogin(data string) loginRes {
 	var lr loginRes
 	lr.sID = GetStringInBetween(data, "<sessionId>", "</sessionId>")
 	lr.orgID = GetStringInBetween(data, "<organizationId>", "</organizationId>")
+	lr.orgURL = GetStringInBetween(GetStringInBetween(data, "<serverUrl>", "</serverUrl>"), "", "/services")
 	return lr
 }
 

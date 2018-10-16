@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"regexp"
@@ -13,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-playground/log"
 	"github.com/spf13/viper"
 )
 
@@ -23,8 +23,8 @@ func export(lr loginRes, consolidateResults *[]DownloadResult) {
 	paths := getPaths(lr)
 
 	if len(paths[0]) == 0 {
-		err := errors.New("Getting files to download failed, number of files zero")
-		log.Fatalln(err)
+		err := errors.New("Getting list of files to download failed. Number of files can't be zero")
+		log.Fatalf("Getting paths failed: %s", err)
 	}
 	fmt.Printf("NUMBER OF URLS TO DOWNLOAD: %v\n", len(paths))
 	workers := 0
@@ -63,16 +63,16 @@ func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes, consolidateR
 		}
 
 		var downloadResultTemp DownloadResult
-		url := viper.GetString("sf.baseUrl") + task
+		url := lr.orgURL + task
 		attempt := 0
 		validateDownloadResult := true
 
 		expectecSize := getDownloadSize(lr, url)
 		fn := fileName(url)
-		filePath := viper.GetString("sf.backuppath") + fn + ".zip"
+		filePath := viper.GetString("sf.backuppath") + "/" + fn + ".zip"
 
 		startDownloadTime := time.Now()
-		log.Printf("Downloading file %s. Attempt: %v\n", filePath, attempt+1)
+		log.Infof("Downloading file %s. Attempt: %v", filePath, attempt+1)
 
 		for validateDownloadResult {
 			filestat, err := os.Stat(filePath)
@@ -80,22 +80,22 @@ func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes, consolidateR
 				attempt++
 				err := DownloadFile(lr, filePath, url)
 				if err != nil {
-					log.Println(err)
+					log.Info(err)
 				}
 			} else if attempt == 3 {
-				log.Printf("Fail to download: %s.", fn)
+				log.Infof("Fail to download: %s.", fn)
 				validateDownloadResult = false
 				downloadResultTemp.Result = "Fail"
 				os.Remove(filePath)
 			} else if expectedSizeInt, _ := strconv.ParseInt(expectecSize, 10, 64); expectedSizeInt != filestat.Size() {
 				attempt++
-				log.Println("The file is corrupted. Retry download attempt: ", attempt)
+				log.Infof("The file is corrupted. Retry download attempt: %v", attempt)
 				err := DownloadFile(lr, filePath, url)
 				if err != nil {
-					log.Println(err)
+					log.Info(err)
 				}
 			} else {
-				log.Printf("Successful download: %s", fn)
+				log.Infof("Successful download: %s", fn)
 				validateDownloadResult = false
 				downloadResultTemp.Result = "Successful"
 			}
@@ -113,8 +113,7 @@ func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes, consolidateR
 }
 
 func getPaths(lr loginRes) []string {
-	url := viper.GetString("sf.baseUrl") + "/servlet/servlet.OrgExport"
-
+	url := lr.orgURL + "/servlet/servlet.OrgExport"
 	headers := map[string]string{
 		"Cookie":         fmt.Sprintf("oid=%s;sid=%s", lr.orgID, lr.sID),
 		"X-SFDC-Session": lr.sID,
