@@ -3,4 +3,4 @@ sf:
   password: <password+token>
   baseUrl: <orgurl>
   backuppath: <path e.g. backup/>
-  workers: <workers>
+  maxworkers: <workers>

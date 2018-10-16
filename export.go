@@ -62,52 +62,50 @@ func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes, consolidateR
 			return
 		}
 
-		//Download details for consolidate results
 		var downloadResultTemp DownloadResult
-
-		// getting file's expected size
 		url := viper.GetString("sf.baseUrl") + task
-		expectecSize := getDownloadSize(lr, url)
+		attempt := 0
+		validateDownloadResult := true
 
-		// downloading file
+		expectecSize := getDownloadSize(lr, url)
 		fn := fileName(url)
 		filePath := viper.GetString("sf.backuppath") + fn + ".zip"
-		log.Printf("Staring download: %s", fn)
 
 		startDownloadTime := time.Now()
-		err := DownloadFile(lr, filePath, url)
-		if err != nil {
-			log.Fatalln(err)
-			return
+		log.Printf("Downloading file %s. Attempt: %v\n", filePath, attempt+1)
+
+		for validateDownloadResult {
+			filestat, err := os.Stat(filePath)
+			if err != nil {
+				attempt++
+				err := DownloadFile(lr, filePath, url)
+				if err != nil {
+					log.Println(err)
+				}
+			} else if attempt == 3 {
+				log.Printf("Fail to download: %s.", fn)
+				validateDownloadResult = false
+				downloadResultTemp.Result = "Fail"
+				os.Remove(filePath)
+			} else if expectedSizeInt, _ := strconv.ParseInt(expectecSize, 10, 64); expectedSizeInt != filestat.Size() {
+				attempt++
+				log.Println("The file is corrupted. Retry download attempt: ", attempt)
+				err := DownloadFile(lr, filePath, url)
+				if err != nil {
+					log.Println(err)
+				}
+			} else {
+				log.Printf("Successful download: %s", fn)
+				validateDownloadResult = false
+				downloadResultTemp.Result = "Successful"
+			}
 		}
 		endDownloadTime := time.Now()
-
-		//verifying file size
-		fi, err := os.Stat(filePath)
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		attempt := 0
 		downloadResultTemp.Duration = endDownloadTime.Sub(startDownloadTime)
 		downloadResultTemp.FileName = fn
+		downloadResultTemp.Attempt = attempt
+		downloadResultTemp.FileSize = expectecSize
 
-		if expectedSizeInt, _ := strconv.ParseInt(expectecSize, 10, 64); expectedSizeInt == fi.Size() {
-			attempt++
-			downloadResultTemp.Attempt = attempt
-			downloadResultTemp.FileSize = expectecSize
-			downloadResultTemp.Result = "Successful"
-			log.Printf("Successful download: %s", fn)
-		} else {
-			attempt++
-			downloadResultTemp.Attempt = attempt
-			downloadResultTemp.FileSize = string(0)
-			downloadResultTemp.Result = "Fail"
-			os.Remove(filePath)
-			errorMessage := "Downloading file " + fn + " failed"
-			err := errors.New(errorMessage)
-			log.Fatalln(err)
-		}
 		mutex.Lock()
 		*consolidateResults = append(*consolidateResults, downloadResultTemp)
 		mutex.Unlock()
