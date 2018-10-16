@@ -13,9 +13,9 @@ import (
 
 //DownloadResult struct used for catching results from downloaded file attempt
 type DownloadResult struct {
-	FileName, FileSize, Result string
-	Attempt                    int
-	Duration                   time.Duration
+	FileName, FileSize, Result, message string
+	Attempt                             int
+	Duration                            time.Duration
 }
 
 var httpClient *http.Client
