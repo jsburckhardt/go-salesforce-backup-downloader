@@ -1,70 +1,27 @@
+// Copyright © 2018 Juan Burckhardt <jsburckhardt>
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
 package main
 
-import (
-	"fmt"
-	"net/http"
-	"os"
-	"time"
-
-	"github.com/go-playground/log"
-	"github.com/go-playground/log/handlers/console"
-	"github.com/spf13/viper"
-)
-
-//DownloadResult struct used for catching results from downloaded file attempt
-type DownloadResult struct {
-	FileName, FileSize, Result, Error string
-	Attempt                           int
-	Duration                          time.Duration
-}
-
-var httpClient *http.Client
-
-func init() {
-	// logger
-	cLog := console.New(true)
-	log.AddHandler(cLog, log.AllLevels...)
-
-	// config
-	viper.SetConfigName("config")
-	viper.AddConfigPath(".")
-	viper.AutomaticEnv()
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Fatalf("Fatal error parsing config file: %v", err)
-	} else {
-		log.Infof("Using configuration file %s", viper.ConfigFileUsed())
-	}
-
-	// initialise client
-	httpClient = &http.Client{
-		Timeout: time.Minute * 1,
-	}
-}
+import "github.com/jsburckhardt/go-salesforce-backup-downloader/cmd"
 
 func main() {
-	start := time.Now()
-	fmt.Printf("Start time -> %s\n", start.Format(time.ANSIC))
-	loginData := login()
-
-	var consolidateResults []DownloadResult
-
-	//Verifying target folder
-	fileFolderValidated := folderValidator(viper.GetString("sf.backuppath"))
-	if _, err := os.Stat(fileFolderValidated); os.IsNotExist(err) {
-		log.Infof("backuppath folder doesn't exist. Creating: %s", fileFolderValidated)
-		err := os.Mkdir(fileFolderValidated, 0777)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	export(loginData, &consolidateResults)
-
-	//Export results
-	exportResultsToCsv(consolidateResults)
-
-	t := time.Now()
-	fmt.Printf("End time -> %s\n", t.Format(time.ANSIC))
-	fmt.Printf("total time -> %s\n", t.Sub(start))
+	cmd.Execute()
 }
