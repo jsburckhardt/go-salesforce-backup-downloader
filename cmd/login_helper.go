@@ -18,9 +18,6 @@ const soap = `<se:Envelope xmlns:se="http://schemas.xmlsoap.org/soap/envelope/">
 			</se:Envelope>`
 
 func login() loginRes {
-
-	//return parseLogin(xml)
-
 	url := "https://login.salesforce.com/services/Soap/u/40.0"
 
 	headers := map[string]string{

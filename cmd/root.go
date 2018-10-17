@@ -29,11 +29,11 @@ import (
 
 	"github.com/go-playground/log"
 	"github.com/go-playground/log/handlers/console"
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
+//DownloadResult struct for structuring download results once
+//files are successfully downloaded or failed.
 type DownloadResult struct {
 	FileName, FileSize, Result, Error string
 	Attempt                           int
@@ -47,18 +47,16 @@ var salesForceUserPassword string
 var maxWorkers int
 var httpClient *http.Client
 
-// rootCmd represents the base command when called without any subcommands
+// rootCmd -> download org files (main purpose)
 var rootCmd = &cobra.Command{
 	Use:   "go-salesforce-backup-downloader",
 	Short: "Commandline application for downloading SalesForce backup files.",
-	Long: `A commandline application for downloading multiple files concurrently
-examples and usage of using your application. For example:
+	Long: `A commandline application for downloading multiple files concurrently.
+You should execute giving Username (u) and Password (p). For example:
+go-salesforce-backup-downloader.exe -u sadmin@atyourcrazyorg -p mypasswordwithtoken
+go-salesforce-backup-downloader.exe --user sadmin@atyourcrazyorg --password mypasswordwithtoken
+`,
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
 		start := time.Now()
 		fmt.Printf("Start time -> %s\n", start.Format(time.ANSIC))
@@ -98,7 +96,8 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
+	// Future development -> accept config file
+	//cobra.OnInitialize(initConfig)
 
 	cLog := console.New(true)
 	log.AddHandler(cLog, log.AllLevels...)
@@ -106,44 +105,43 @@ func init() {
 	httpClient = &http.Client{
 		Timeout: time.Minute * 10,
 	}
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.go-salesforce-backup-downloader.yaml)")
+
+	// global parameters for the application.
+	// Future development -> accept config file
+	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.go-salesforce-backup-downloader.yaml)")
 	rootCmd.PersistentFlags().StringVarP(&salesForceUserName, "user", "u", "", "Salesforce username e.g something@somewhere.there")
 	rootCmd.PersistentFlags().StringVarP(&salesForceUserPassword, "password", "p", "", "Salesforce password+token e.g supersecretpasswordwithtoken")
 	rootCmd.PersistentFlags().IntVarP(&maxWorkers, "maxworkers", "m", 5, "Maximum number of workers for concurrency. (default is 5)")
-	rootCmd.MarkFlagRequired("user")
-	rootCmd.MarkFlagRequired("password")
+	rootCmd.MarkPersistentFlagRequired("user")
+	rootCmd.MarkPersistentFlagRequired("password")
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.PersistentFlags().BoolVarP(&debugStatus, "debug", "d", false, "debug?")
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// debug flag should be use for verbosity
+	//rootCmd.PersistentFlags().BoolVarP(&debugStatus, "debug", "d", false, "debug?")
 }
 
 // initConfig reads in config file and ENV variables if set.
-func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+// currently no config file is being passed.
+// func initConfig() {
+// 	if cfgFile != "" {
+// 		// Use config file from the flag.
+// 		viper.SetConfigFile(cfgFile)
+// 	} else {
+// 		// Find home directory.
+// 		home, err := homedir.Dir()
+// 		if err != nil {
+// 			fmt.Println(err)
+// 			os.Exit(1)
+// 		}
 
-		// Search config in home directory with name ".go-salesforce-backup-downloader" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".go-salesforce-backup-downloader")
-	}
+// 		// Search config in home directory with name ".go-salesforce-backup-downloader" (without extension).
+// 		viper.AddConfigPath(home)
+// 		viper.SetConfigName(".go-salesforce-backup-downloader")
+// 	}
 
-	viper.AutomaticEnv() // read in environment variables that match
+// 	viper.AutomaticEnv() // read in environment variables that match
 
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
-	}
-}
+// 	// If a config file is found, read it in.
+// 	if err := viper.ReadInConfig(); err == nil {
+// 		fmt.Println("Using config file:", viper.ConfigFileUsed())
+// 	}
+//}
