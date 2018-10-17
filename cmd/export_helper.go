@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"errors"
@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/go-playground/log"
-	"github.com/spf13/viper"
 )
 
 var wg sync.WaitGroup
@@ -28,10 +27,10 @@ func export(lr loginRes, consolidateResults *[]DownloadResult) {
 	}
 	fmt.Printf("NUMBER OF URLS TO DOWNLOAD: %v\n", len(paths))
 	workers := 0
-	if len(paths) < viper.GetInt("sf.maxworkers") {
+	if len(paths) < maxWorkers {
 		workers = len(paths)
 	} else {
-		workers = viper.GetInt("sf.maxworkers")
+		workers = maxWorkers
 	}
 	fmt.Printf("USING %v THREADS\n", workers)
 
@@ -69,7 +68,7 @@ func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes, consolidateR
 
 		expectecSize := getDownloadSize(lr, url)
 		fn := fileName(url)
-		fileFolderValidated := folderValidator(viper.GetString("sf.backuppath"))
+		fileFolderValidated := strings.Split(salesForceUserName, "@")[len(strings.Split(salesForceUserName, "@"))-1]
 		filePath := fileFolderValidated + "/" + fn + ".zip"
 
 		startDownloadTime := time.Now()
@@ -81,6 +80,7 @@ func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes, consolidateR
 				attempt++
 				err := DownloadFile(lr, filePath, url)
 				if err != nil {
+					downloadResultTemp.Error = err.Error()
 					log.Info(err)
 				}
 			} else if attempt == 3 {
@@ -93,10 +93,12 @@ func worker(tasksCh <-chan string, wg *sync.WaitGroup, lr loginRes, consolidateR
 				log.Infof("The file is corrupted. Retry download attempt: %v", attempt)
 				err := DownloadFile(lr, filePath, url)
 				if err != nil {
+					downloadResultTemp.Error = err.Error()
 					log.Info(err)
 				}
 			} else {
 				log.Infof("Successful download: %s", fn)
+				downloadResultTemp.Error = "nil"
 				validateDownloadResult = false
 				downloadResultTemp.Result = "Successful"
 			}
