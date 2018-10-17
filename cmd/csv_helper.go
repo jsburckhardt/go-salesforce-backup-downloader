@@ -1,18 +1,17 @@
-package main
+package cmd
 
 import (
 	"encoding/csv"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/go-playground/log"
-
-	"github.com/spf13/viper"
 )
 
 func exportResultsToCsv(consolidateResults []DownloadResult) {
-	fileFolderValidated := folderValidator(viper.GetString("sf.backuppath"))
-	exportResultsToCsvFileName := fileFolderValidated + "/" + viper.GetString("sf.username") + ".csv"
+	fileFolderValidated := strings.Split(salesForceUserName, "@")[len(strings.Split(salesForceUserName, "@"))-1]
+	exportResultsToCsvFileName := fileFolderValidated + "/" + salesForceUserName + ".csv"
 	file, err := os.Create(exportResultsToCsvFileName)
 	if err != nil {
 		log.Fatal(err)
