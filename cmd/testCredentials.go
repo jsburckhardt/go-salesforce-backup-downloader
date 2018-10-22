@@ -21,44 +21,38 @@
 package cmd
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/spf13/cobra"
 )
 
-// testConnectionCmd represents the testConnection command
-var testConnectionCmd = &cobra.Command{
-	Use:   "testConnection",
+// testCredentialsCmd represents the testCredentials command
+var testCredentialsCmd = &cobra.Command{
+	Use:   "testCredentials",
 	Short: "Test credentials for org",
 	Long: `use testConnection for testing Salesforce Credentials.
 For example:
 go-salesforce-backup-downloader.exe testConnection -u sadmin@atyourcrazyorg -p mypasswordwithtoken
 go-salesforce-backup-downloader.exe testConnection --user sadmin@atyourcrazyorg --password mypasswordwithtoken`,
 	Run: func(cmd *cobra.Command, args []string) {
-		login()
+		loginResult := login()
+		if len(loginResult.sID) > 0 {
+			fmt.Printf("*** Login successful %s ***\n", salesForceUserName)
+		}
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(testConnectionCmd)
+	rootCmd.AddCommand(testCredentialsCmd)
 
 	httpClient = &http.Client{
 		Timeout: time.Minute * 10,
 	}
 
-	testConnectionCmd.PersistentFlags().StringVarP(&salesForceUserName, "user", "u", "", "Salesforce username e.g something@somewhere.there")
-	testConnectionCmd.PersistentFlags().StringVarP(&salesForceUserPassword, "password", "p", "", "Salesforce password+token e.g supersecretpasswordwithtoken")
-	testConnectionCmd.MarkPersistentFlagRequired("user")
-	testConnectionCmd.MarkPersistentFlagRequired("password")
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// testConnectionCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// testConnectionCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	testCredentialsCmd.PersistentFlags().StringVarP(&salesForceUserName, "user", "u", "", "Salesforce username e.g something@somewhere.there")
+	testCredentialsCmd.PersistentFlags().StringVarP(&salesForceUserPassword, "password", "p", "", "Salesforce password+token e.g supersecretpasswordwithtoken")
+	testCredentialsCmd.MarkPersistentFlagRequired("user")
+	testCredentialsCmd.MarkPersistentFlagRequired("password")
 }

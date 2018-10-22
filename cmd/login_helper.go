@@ -33,8 +33,6 @@ func login() loginRes {
 		log.Fatalf("Error upon login: %v", err)
 	} else if strings.Contains(GetStringInBetween(string(res), "<faultcode>", "</faultcode>"), "INVALID_LOGIN") {
 		log.Fatal("INVALID_LOGIN")
-	} else {
-		log.Info("Login successful")
 	}
 
 	// fmt.Println("*** response ***")
