@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -39,7 +40,9 @@ go-salesforce-backup-downloader.exe testConnection --user sadmin@atyourcrazyorg 
 	Run: func(cmd *cobra.Command, args []string) {
 		loginResult := login()
 		if len(loginResult.sID) > 0 {
+			color.Set(color.FgHiGreen)
 			fmt.Printf("*** Login successful %s ***\n", salesForceUserName)
+			color.Unset()
 		}
 	},
 }
