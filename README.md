@@ -1,6 +1,6 @@
 # go-salesforce-backup-downloader
 
-go-salesforce-backup-downloader is a Golang command line app to download Salesforce Org's backup files
+go-salesforce-backup-downloader is a command line app written in GO to download backup files from Salesforce Org's
 
 > Some of the features:
 
@@ -12,30 +12,37 @@ go-salesforce-backup-downloader is a Golang command line app to download Salesfo
 
 ---
 
-## Commands:
+## Table of Contents
 
-> Examples:
-
-- [download](#download)
-- [numberOfFiles](#numberOfFiles)
-- [testCredentials](#testCredentials)
-- help
+- [Commands](#Commands)
+- [Examples](#Examples)
 - [License](#License)
 
-## download
+---
+
+## Commands:
+
+- download
+- numberOfFiles
+- testCredentials
+- help
+- License
+
+## Examples:
+> download
 ```shell
 > go-salesforce-backup-downloader.exe download -u sadmin@atyourcrazyorg -p mypasswordwithtoken 
 > go-salesforce-backup-downloader.exe download --user sadmin@atyourcrazyorg --password mypasswordwithtoken
 > go-salesforce-backup-downloader.exe download -u sadmin@atyourcrazyorg -p mypasswordwithtoken -m 5
 > go-salesforce-backup-downloader.exe download -u sadmin@atyourcrazyorg -p mypasswordwithtoken --maxworkers 5
 ```
-## numberOfFiles
+> numberOfFiles
 ```shell
 > go-salesforce-backup-downloader.exe numberOfFiles -u sadmin@atyourcrazyorg -p mypasswordwithtoken
 > go-salesforce-backup-downloader.exe numberOfFiles --user sadmin@atyourcrazyorg --password mypasswordwithtoken
 ```
 
-## testCredentials
+> testCredentials
 ```shell
 > go-salesforce-backup-downloader.exe numberOfFiles -u sadmin@atyourcrazyorg -p mypasswordwithtoken
 > go-salesforce-backup-downloader.exe numberOfFiles --user sadmin@atyourcrazyorg --password mypasswordwithtoken
