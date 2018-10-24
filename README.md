@@ -18,18 +18,31 @@ go-salesforce-backup-downloader is a Golang command line app to download Salesfo
 - [numberOfFiles](#numberOfFiles)
 - [testCredentials](#testCredentials)
 - help
+- [License](#License)
 
 ## download
-go-salesforce-backup-downloader.exe download -u sadmin@atyourcrazyorg -p mypasswordwithtoken 
-go-salesforce-backup-downloader.exe download --user sadmin@atyourcrazyorg --password mypasswordwithtoken
-go-salesforce-backup-downloader.exe download -u sadmin@atyourcrazyorg -p mypasswordwithtoken -m 5
-go-salesforce-backup-downloader.exe download -u sadmin@atyourcrazyorg -p mypasswordwithtoken --maxworkers 5
-
+```shell
+> go-salesforce-backup-downloader.exe download -u sadmin@atyourcrazyorg -p mypasswordwithtoken 
+> go-salesforce-backup-downloader.exe download --user sadmin@atyourcrazyorg --password mypasswordwithtoken
+> go-salesforce-backup-downloader.exe download -u sadmin@atyourcrazyorg -p mypasswordwithtoken -m 5
+> go-salesforce-backup-downloader.exe download -u sadmin@atyourcrazyorg -p mypasswordwithtoken --maxworkers 5
+```
 ## numberOfFiles
-go-salesforce-backup-downloader.exe numberOfFiles -u sadmin@atyourcrazyorg -p mypasswordwithtoken
-go-salesforce-backup-downloader.exe numberOfFiles --user sadmin@atyourcrazyorg --password mypasswordwithtoken
+```shell
+> go-salesforce-backup-downloader.exe numberOfFiles -u sadmin@atyourcrazyorg -p mypasswordwithtoken
+> go-salesforce-backup-downloader.exe numberOfFiles --user sadmin@atyourcrazyorg --password mypasswordwithtoken
+```
 
 ## testCredentials
-go-salesforce-backup-downloader.exe numberOfFiles -u sadmin@atyourcrazyorg -p mypasswordwithtoken
-go-salesforce-backup-downloader.exe numberOfFiles --user sadmin@atyourcrazyorg --password mypasswordwithtoken
+```shell
+> go-salesforce-backup-downloader.exe numberOfFiles -u sadmin@atyourcrazyorg -p mypasswordwithtoken
+> go-salesforce-backup-downloader.exe numberOfFiles --user sadmin@atyourcrazyorg --password mypasswordwithtoken
+```
 
+---
+## License
+
+[![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](http://badges.mit-license.org)
+
+- **[MIT license](http://opensource.org/licenses/mit-license.php)**
+- Copyright 2015 © <a href="http://fvcproductions.com" target="_blank">FVCproductions</a>.
