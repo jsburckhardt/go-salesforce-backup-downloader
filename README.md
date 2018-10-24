@@ -12,6 +12,11 @@ go-salesforce-backup-downloader is a command line app written in GO to download 
 
 ---
 
+[![Build status](https://juanburckhardt.visualstudio.com/go-salesforce-backup-downloader/_apis/build/status/go-salesforce-backup-downloader-Go%20(preview)-CI)](https://juanburckhardt.visualstudio.com/go-salesforce-backup-downloader/_build/latest?definitionId=1) [![Github Issues](http://githubbadges.herokuapp.com/badges/badgerbadgerbadger/issues.svg?style=flat-square)](https://github.com/jsburckhardt/go-salesforce-backup-downloader/issues) [![Pending Pull-Requests](http://githubbadges.herokuapp.com/badges/badgerbadgerbadger/pulls.svg?style=flat-square)](https://github.com/jsburckhardt/go-salesforce-backup-downloader/pulls) [![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](http://badges.mit-license.org) 
+[![Badges](http://img.shields.io/:badges-9/9-ff6799.svg?style=flat-square)](https://github.com/jsburckhardt/go-salesforce-backup-downloader)
+
+---
+
 ## Table of Contents
 
 - [Commands](#Commands)
