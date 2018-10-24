@@ -10,8 +10,6 @@ go-salesforce-backup-downloader is a command line app written in GO to download 
 - Generates a csv with the download resutls
 - Uses 5 threads as default, but can be customized
 
----
-
 ## Table of Contents
 
 - [Commands](#Commands)
