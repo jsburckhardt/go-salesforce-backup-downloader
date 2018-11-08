@@ -34,8 +34,8 @@ var numberOfFilesCmd = &cobra.Command{
 	Short: "Returns the number of backup files available for the org",
 	Long: `Returns the number of backup files available for the requested org. 	
 For example:
-go-salesforce-backup-downloader.exe testConnection -u sadmin@atyourcrazyorg -p mypasswordwithtoken
-go-salesforce-backup-downloader.exe testConnection --user sadmin@atyourcrazyorg --password mypasswordwithtoken`,
+go-salesforce-backup-downloader.exe numberOfFiles -u sadmin@atyourcrazyorg -p mypasswordwithtoken
+go-salesforce-backup-downloader.exe numberOfFiles --user sadmin@atyourcrazyorg --password mypasswordwithtoken`,
 	Run: func(cmd *cobra.Command, args []string) {
 		loginData := login()
 		paths := getPaths(loginData)
